@@ -1,64 +1,98 @@
+# Copyright 2023 ETH Zurich and University of Bologna
+# Solderpad Hardware License, Version 0.51, see LICENSE for details.
+# SPDX-License-Identifier: SHL-0.51
+
 package:
-  name: hci
+  name: pulp_cluster
   authors:
+    - "Pirmin Vogel <vogelpi@lowrisc.org>"
+    - "Angelo Garofalo <angelo.garofalo@unibo.it>"
     - "Francesco Conti <f.conti@unibo.it>"
-    - "Gianna Paulin <pauling@iis.ee.ethz.ch"
-    - "Tobias Riedener <tobiasri@student.ethz.ch>"
-    - "Luigi Ghionda <luigi.ghionda2@studio.it>"
-    - "Arpan Suravi Prasad <prasadar@iis.ee.ethz.ch>"
+    - "Jie Chen <jie.chen@greenwaves-technologies.com>"
+    - "Michael Rogenmoser <michaero@student.ethz.ch>"
 
 dependencies:
-  hwpe-stream:            { git: "https://github.com/pulp-platform/hwpe-stream.git", version: 1.9.0 }
-  cluster_interconnect:   { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: 1284def6c0b7f7e9355eb093d00883ad9dead1b7 }
-  L2_tcdm_hybrid_interco: { git: "https://github.com/pulp-platform/L2_tcdm_hybrid_interco.git", version: 1.0.0 }
-  redundancy_cells:       { git: "https://github.com/pulp-platform/redundancy_cells.git", rev: c37bdb47339bf70e8323de8df14ea8bbeafb6583 } # branch: astral_rebase
-  common_cells:           { git: "https://github.com/pulp-platform/common_cells.git", version: 1.24.0 }
-  register_interface:     { git: "https://github.com/pulp-platform/register_interface.git", version: 0.3.1 }
+  axi2mem:                { git: "https://github.com/pulp-platform/axi2mem.git",              rev: v1.0.2      }
+  axi2per:                { git: "https://github.com/pulp-platform/axi2per.git",              rev: v1.0.2      }
+  per2axi:                { git: "https://github.com/pulp-platform/per2axi.git",              rev: v1.0.5      }
+  cluster_interconnect:   { git: "https://github.com/pulp-platform/cluster_interconnect.git", rev: v1.3.0      }
+  event_unit_flex:        { git: "https://github.com/pulp-platform/event_unit_flex.git",      rev: astral-v1.0 }
+  mchan:                  { git: "https://github.com/pulp-platform/mchan.git", rev: v1.2.4 }
+  idma:                   { git: "https://github.com/pulp-platform/iDMA.git", rev: v0.6.3 }
+  hier-icache:            { git: "https://github.com/pulp-platform/hier-icache.git", rev: v1.3.0 }
+  cluster_icache:         { git: "https://github.com/pulp-platform/cluster_icache.git", rev: v0.2.0 }
+  cluster_peripherals:    { git: "https://github.com/pulp-platform/cluster_peripherals.git", rev: v2.2.0 }
+  axi:                    { git: "https://github.com/pulp-platform/axi.git", version: 0.39.3  }
+  timer_unit:             { git: "https://github.com/pulp-platform/timer_unit.git", version: 1.0.2 }
+  common_cells:           { git: "https://github.com/pulp-platform/common_cells.git", version: 1.38.0 }
+  tech_cells_generic:     { git: "https://github.com/pulp-platform/tech_cells_generic.git", rev: 8149cde }
+  flex-v:                 { git: "https://github.com/pulp-platform/flex-v.git", rev: astral-v1.1 }
+  cv32e40p:               { git: "https://github.com/pulp-platform/cv32e40p.git", rev: astral-v1.0 }
+  ibex:                   { git: "https://github.com/pulp-platform/ibex.git", rev: "pulpissimo-v6.1.2" }
+  scm:                    { git: "https://github.com/pulp-platform/scm.git", rev: v1.2.0 }
+  hci:                    { git: "https://github.com/ThePebblesFr/hci.git", rev: v2.1.2 }
+  register_interface:     { git: "https://github.com/pulp-platform/register_interface.git", version: 0.4.4  }
+  redundancy_cells:       { git: "https://github.com/pulp-platform/redundancy_cells.git", rev: master }
+  redmule:                { git: "https://github.com/pulp-platform/redmule.git", rev: astral-v1.0 }
+  neureka:                { git: "https://github.com/pulp-platform/neureka.git", rev: astral-v1.0 }
+  softex:                 { git: "https://github.com/belanoa/softex.git"       , rev: astral-v1.0 }
 
-# this is necessary to expose hci_helpers.svh to dependent packages
 export_include_dirs:
-  - rtl/common
+  - include
 
 sources:
-  - include_dirs:
-      - rtl/common
+    # Source files grouped in levels. Files in level 0 have no dependencies on files in this
+    # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
+    # levels 1 and 0, etc. Files within a level are ordered alphabetically.
+    # Level 0
+  - packages/pulp_cluster_package.sv
+  - rtl/axi2mem_wrap.sv
+  - rtl/axi2per_wrap.sv
+  - rtl/cluster_bus_wrap.sv
+  - rtl/cluster_clock_gate.sv
+  - rtl/cluster_event_map.sv
+  - rtl/cluster_timer_wrap.sv
+  - rtl/obi_pulp_adapter.sv
+  - target: mchan
     files:
-      # Source files grouped in levels. Files in level 0 have no dependencies on files in this
-      # package. Files in level 1 only depend on files in level 0, files in level 2 on files in
-      # levels 1 and 0, etc. Files within a level are ordered alphabetically.
-      # Level 0
-      - rtl/common/hci_package.sv
-      - rtl/ecc/hci_ecc_manager_reg_pkg.sv
-      # Level 1
-      - rtl/common/hci_interfaces.sv
-      - rtl/ecc/hci_ecc_manager_reg_top.sv
-      # Level 2
-      - rtl/core/hci_core_assign.sv
-      - rtl/core/hci_core_assign_expand.sv
-      - rtl/core/hci_core_fifo.sv
-      - rtl/core/hci_core_mux_dynamic.sv
-      - rtl/core/hci_core_mux_static.sv
-      - rtl/core/hci_core_mux_ooo.sv
-      - rtl/core/hci_core_r_valid_filter.sv
-      - rtl/core/hci_core_r_id_filter.sv
-      - rtl/core/hci_core_source.sv
-      - rtl/core/hci_core_split.sv
-      - rtl/ecc/hci_ecc_dec.sv
-      - rtl/ecc/hci_ecc_enc.sv
-      - rtl/ecc/hci_ecc_manager.sv
-      - rtl/interco/hci_log_interconnect.sv
-      - rtl/interco/hci_log_interconnect_l2.sv
-      - rtl/interco/hci_new_log_interconnect.sv # `new_XBAR_TCDM` dep. is a private repo
-      - rtl/interco/hci_arbiter.sv
-      - rtl/interco/hci_arbiter_tree.sv
-      - rtl/interco/hci_router_reorder.sv
-      - rtl/parity/hci_copy_source.sv
-      - rtl/parity/hci_copy_sink.sv
-      # Level 3
-      - rtl/core/hci_core_sink.sv
-      - rtl/ecc/hci_ecc_source.sv
-      - rtl/interco/hci_router.sv
-      # Level 4
-      - rtl/ecc/hci_ecc_interconnect.sv
-      - rtl/ecc/hci_ecc_sink.sv
-      - rtl/hci_interconnect.sv
+      - rtl/mchan_wrap.sv
+  - target: not(mchan)
+    files:
+      - rtl/idma_wrap.sv
+  - rtl/hwpe_subsystem.sv
+  - rtl/instr_width_converter.sv
+  - rtl/per2axi_wrap.sv
+  - rtl/periph_demux.sv
+  - rtl/per_demux_wrap.sv
+  - rtl/periph_FIFO.sv
+  - rtl/tcdm_banks_wrap.sv
+  - rtl/xbar_pe_wrap.sv
+    # Level 1
+  - rtl/cluster_interconnect_wrap.sv
+  - rtl/cluster_peripherals.sv
+  - rtl/data_periph_demux.sv
+  - rtl/core_demux_wrap.sv
+  - rtl/core_region.sv
+  - target: simulation
+    files:
+    defines:
+      TRACE_EXECUTION: ~
+    # Level 3
+  - rtl/pulp_cluster.sv
+  - rtl/pulp_cluster_wrap.sv
+
+  - target: test
+    files:
+      - tb/mock_uart.sv
+      - tb/mock_uart_axi.sv
+      - tb/pulp_cluster_tb.sv
+
+  - target: cluster_standalone
+    files:
+      - include/pulp_interfaces.sv
+
+  - target: pulp_standalone_synth
+    files:
+    - nonfree/gf12/sourcecode/tc_sram.sv
+    - nonfree/gf12/sourcecode/tc_clk.sv
+
